@@ -1,0 +1,227 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "🏢 브랜드 온보딩 모니터링 대시보드 v3 (메모리 수정)",
+    "tags": ["brand-onboarding", "prometheus", "memory-fixed"],
+    "timezone": "Asia/Seoul",
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "📊 실시간 브랜드 등록 현황",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "brand_registrations_total",
+            "legendFormat": "총 등록 수",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 5},
+                {"color": "red", "value": 10}
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "🚀 HTTP 총 요청 수",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(http_requests_total)",
+            "legendFormat": "총 HTTP 요청",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "blue", "value": null},
+                {"color": "green", "value": 10},
+                {"color": "yellow", "value": 50}
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "🚀 시스템 업타임",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "system_uptime_seconds / 3600",
+            "legendFormat": "업타임 (시간)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "green", "value": 24}
+              ]
+            },
+            "unit": "h"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "💾 메모리 사용률 (%)",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "memory_usage_bytes{type=\"used\"} / on() memory_usage_bytes{type=\"total\"} * 100",
+            "legendFormat": "메모리 사용률",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "red", "value": 90}
+              ]
+            },
+            "unit": "percent",
+            "max": 100,
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "📈 HTTP 요청 추이 (핸들러별)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{handler}} {{method}}",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "요청/초",
+            "show": true
+          }
+        ],
+        "legend": {
+          "show": true
+        }
+      },
+      {
+        "id": 6,
+        "title": "⏱️ HTTP API 응답 시간 분포 (95%, 50% 분위수)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50% 응답시간",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95% 응답시간",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "시간 (초)",
+            "show": true
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "🔥 정밀 HTTP 응답 시간 (고해상도)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_highr_seconds_bucket[5m]))",
+            "legendFormat": "99% 응답시간 (정밀)",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_highr_seconds_bucket[5m]))",
+            "legendFormat": "95% 응답시간 (정밀)",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_highr_seconds_bucket[5m]))",
+            "legendFormat": "50% 응답시간 (정밀)",
+            "refId": "C"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "시간 (초)",
+            "show": true
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "💾 메모리 사용량 세부 정보 (GB)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "memory_usage_bytes{type=\"used\"} / 1024 / 1024 / 1024",
+            "legendFormat": "사용 중 메모리 (GB)",
+            "refId": "A"
+          },
+          {
+            "expr": "memory_usage_bytes{type=\"available\"} / 1024 / 1024 / 1024",
+            "legendFormat": "사용 가능 메모리 (GB)",
+            "refId": "B"
+          },
+          {
+            "expr": "memory_usage_bytes{type=\"total\"} / 1024 / 1024 / 1024",
+            "legendFormat": "총 메모리 (GB)",
+            "refId": "C"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "메모리 (GB)",
+            "show": true
+          }
+        ]
+      }
+    ]
+  },
+  "folderId": null,
+  "overwrite": true
+}
