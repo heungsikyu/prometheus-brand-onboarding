@@ -1,0 +1,212 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "🏢 브랜드 온보딩 모니터링 대시보드",
+    "tags": ["brand-onboarding", "prometheus"],
+    "timezone": "Asia/Seoul",
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "📊 실시간 브랜드 등록 현황",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "brand_registrations_total",
+            "legendFormat": "총 등록 수",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 5},
+                {"color": "red", "value": 10}
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "⏱️ 브랜드 등록 성공률",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(brand_registrations_total{status=\"success\"}[5m]) / rate(brand_registrations_total[5m]) * 100",
+            "legendFormat": "성공률 (%)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 80},
+                {"color": "green", "value": 95}
+              ]
+            },
+            "unit": "percent",
+            "max": 100,
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "🚀 시스템 업타임",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "system_uptime_seconds / 3600",
+            "legendFormat": "업타임 (시간)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "green", "value": 24}
+              ]
+            },
+            "unit": "h"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "💾 활성 브랜드 수",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "active_brands_total",
+            "legendFormat": "활성 브랜드",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "blue", "value": null}
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "📈 브랜드 등록 추이 (시간별)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "increase(brand_registrations_total[1h])",
+            "legendFormat": "시간당 등록 수",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "등록 수",
+            "show": true
+          }
+        ],
+        "legend": {
+          "show": true
+        }
+      },
+      {
+        "id": 6,
+        "title": "⏱️ 온보딩 소요 시간 분포",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(brand_onboarding_duration_seconds_bucket[5m]))",
+            "legendFormat": "50% 분위수",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(brand_onboarding_duration_seconds_bucket[5m]))",
+            "legendFormat": "95% 분위수",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "시간 (초)",
+            "show": true
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "🚀 HTTP API 응답 시간",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95% 응답시간",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50% 응답시간",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "시간 (초)",
+            "show": true
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "💾 메모리 사용률",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "memory_usage_bytes{type=\"used\"} / memory_usage_bytes{type=\"total\"} * 100",
+            "legendFormat": "메모리 사용률 (%)",
+            "refId": "A"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "사용률 (%)",
+            "max": 100,
+            "min": 0,
+            "show": true
+          }
+        ]
+      }
+    ]
+  },
+  "folderId": null,
+  "overwrite": true
+}

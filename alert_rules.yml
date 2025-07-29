@@ -1,0 +1,94 @@
+groups:
+- name: brand_onboarding_alerts
+  rules:
+  
+  # === 🏢 브랜드 온보딩 알림 ===
+  
+  # 브랜드 등록 실패율 높음
+  - alert: HighBrandRegistrationFailureRate
+    expr: |
+      (
+        rate(brand_registrations_total{status=~"failed.*"}[5m]) /
+        rate(brand_registrations_total[5m])
+      ) > 0.1
+    for: 2m
+    labels:
+      severity: warning
+      service: brand_onboarding
+    annotations:
+      summary: "브랜드 등록 실패율이 10%를 초과했습니다"
+      description: "지난 5분간 브랜드 등록 실패율이 {{ $value | humanizePercentage }}입니다"
+      
+  # 온보딩 시간 지연
+  - alert: SlowBrandOnboarding
+    expr: |
+      histogram_quantile(0.95, 
+        rate(brand_onboarding_duration_seconds_bucket[5m])
+      ) > 30
+    for: 1m
+    labels:
+      severity: warning
+      service: brand_onboarding
+    annotations:
+      summary: "브랜드 온보딩 시간이 지연되고 있습니다"
+      description: "95% 온보딩 시간이 {{ $value }}초입니다 (기준: 30초)"
+  
+  # === 🚀 API 성능 알림 ===
+  
+  # API 응답 시간 지연
+  - alert: SlowAPIResponse
+    expr: |
+      histogram_quantile(0.95,
+        rate(http_request_duration_seconds_bucket[5m])
+      ) > 2.0
+    for: 1m
+    labels:
+      severity: critical
+      service: api
+    annotations:
+      summary: "API 응답 시간이 임계값을 초과했습니다"
+      description: "95% API 응답 시간이 {{ $value }}초입니다"
+      
+  # API 에러율 높음
+  - alert: HighAPIErrorRate
+    expr: |
+      (
+        rate(http_requests_total{status=~"5.."}[5m]) /
+        rate(http_requests_total[5m])
+      ) > 0.05
+    for: 2m
+    labels:
+      severity: critical
+      service: api
+    annotations:
+      summary: "API 에러율이 5%를 초과했습니다"
+      description: "지난 5분간 에러율: {{ $value | humanizePercentage }}"
+  
+  # === 💾 시스템 리소스 알림 ===
+  
+  # 메모리 사용률 높음
+  - alert: HighMemoryUsage
+    expr: |
+      (
+        memory_usage_bytes{type="used"} /
+        memory_usage_bytes{type="total"}
+      ) > 0.9
+    for: 5m
+    labels:
+      severity: warning
+      service: system
+    annotations:
+      summary: "메모리 사용률이 90%를 초과했습니다"
+      description: "현재 메모리 사용률: {{ $value | humanizePercentage }}"
+      
+  # 데이터베이스 연결 실패
+  - alert: DatabaseConnectionFailure
+    expr: |
+      rate(database_operations_total{status="error"}[5m]) > 0
+    for: 1m
+    labels:
+      severity: critical
+      service: database
+    annotations:
+      summary: "데이터베이스 연결 오류가 발생했습니다"
+      description: "DB 오류율: {{ $value }}/초"

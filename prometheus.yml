@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 15s      # 15초마다 메트릭 수집
+  evaluation_interval: 15s  # 알림 규칙 평가 주기
+  external_labels:
+    monitor: 'brand-onboarding-monitor'
+
+# 알림 규칙 파일 로드
+rule_files:
+  - "alert_rules.yml"
+
+# AlertManager 설정
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# 메트릭 수집 대상 설정
+scrape_configs:
+  # 브랜드 온보딩 API 메트릭 수집
+  - job_name: 'brand-onboarding-api'
+    static_configs:
+      - targets: ['host.docker.internal:8001']  # Mac/Windows Docker
+    metrics_path: '/health/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    
+  # Prometheus 자체 메트릭
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    
+  # Grafana 메트릭 (선택사항)
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
